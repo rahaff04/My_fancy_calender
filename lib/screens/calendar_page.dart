@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import 'package:dotted_border/dotted_border.dart';
 import '../utilies/pixel_button.dart';
-import '../utilies/add_button.dart';
+import '../utilies/day_card.dart';
+import '../utilies/popup_menu.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -12,18 +12,14 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-
+  bool _showDayCard = false;
   DateTime _focusedDate = DateTime.now();
-
   DateTime _selectedDate = DateTime.now();
-
   final List<String> _months = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
   ];
-
   final List<String> _daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-
   //to change the month
   void monthChange(int increment)
   {
@@ -31,14 +27,10 @@ class _CalendarPageState extends State<CalendarPage> {
       _focusedDate = DateTime(_focusedDate.year, _focusedDate.month + increment, 1);
     });
   }
-
   @override
   Widget build(BuildContext context){
-    
     final int dayInMonth = DateUtils.getDaysInMonth(_focusedDate.year, _focusedDate.month);
     final int firstWeekday = DateTime(_focusedDate.year, _focusedDate.month, 1).weekday%7;
-
-
     return Scaffold(
       backgroundColor: MyTheme.softLavender,
       appBar: AppBar(
@@ -48,14 +40,16 @@ class _CalendarPageState extends State<CalendarPage> {
             'My calendar',
           style: Theme.of(context).textTheme.titleLarge,
         ),
+        actions: const [
+          CustomPopupMenu(),
+        ],
       ),
-
-
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
+              //day row
               Container(
                 padding: EdgeInsets.all(12.0),
                 decoration: BoxDecoration(
@@ -71,22 +65,17 @@ class _CalendarPageState extends State<CalendarPage> {
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
                   children: [
-
                     //back one month
                     PixelButton(
                       icon: Icons.chevron_left,
                        onTap: () => monthChange(-1)
                     ),
-
-
                     //view the date
                     Text(
                       '${_months[_focusedDate.month - 1]} ${_focusedDate.year}',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
-
                     //next month
                     PixelButton(
                         icon: Icons.chevron_right , 
@@ -94,9 +83,8 @@ class _CalendarPageState extends State<CalendarPage> {
                   ],
                 ),
               ),
-
-              const SizedBox(height: 16.0),
-
+              const SizedBox(height: 11.0),
+              //days of week
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: _daysOfWeek.map((day){
@@ -110,42 +98,32 @@ class _CalendarPageState extends State<CalendarPage> {
                   );
                 }).toList(),
               ),
-
-              const SizedBox(height: 12.0),
-
+              const SizedBox(height: 6.0),
               GridView.builder(
                 shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: dayInMonth + firstWeekday,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: 42,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 7,
-                    mainAxisSpacing: 6,
-                    crossAxisSpacing: 6
+                  crossAxisCount: 7,
+                  mainAxisSpacing: 6,
+                  crossAxisSpacing: 6,
+                  childAspectRatio: 1.0,
                 ),
-                itemBuilder: (context, index){
-
-                  if(index < firstWeekday)
-                    {
-                      return const SizedBox();
-                    }
+                itemBuilder: (context, index) {
+                  if (index < firstWeekday || index >= firstWeekday + dayInMonth) {
+                    return const SizedBox();
+                  }
                   final dayNumber = index - firstWeekday + 1;
                   final cellDate = DateTime(_focusedDate.year, _focusedDate.month, dayNumber);
-
                   final now = DateTime.now();
-
                   final isSelected = cellDate.year == _selectedDate.year &&
                       cellDate.month == _selectedDate.month &&
                       cellDate.day == _selectedDate.day;
-
-                  //current date
-
                   final isToday = cellDate.year == now.year &&
                       cellDate.month == now.month &&
                       cellDate.day == now.day;
-
                   Color cellColor;
                   Border cellBorder;
-
                   if (isSelected) {
                     cellColor = MyTheme.mediumPurple;
                     cellBorder = Border.all(color: MyTheme.pixelOutline, width: 2);
@@ -153,39 +131,36 @@ class _CalendarPageState extends State<CalendarPage> {
                     cellColor = MyTheme.softPink;
                     cellBorder = Border.all(color: MyTheme.pastelPink, width: 2);
                   } else {
-                    cellColor = MyTheme.pastelLavender.withOpacity(0.4);
+                    cellColor = MyTheme.pastelLavender.withValues();
                     cellBorder = Border.all(color: Colors.transparent);
                   }
-
-
                   return GestureDetector(
                     onTap: () {
                       setState(() {
                         _selectedDate = cellDate;
+                        _showDayCard = true;
                       });
                     },
                     child: Container(
-                      decoration: BoxDecoration(color: cellColor,
+                      decoration: BoxDecoration(
+                        color: cellColor,
                         borderRadius: BorderRadius.circular(4),
                         border: cellBorder,
                       ),
-
                       child: Center(
                         child: Text(
                           '$dayNumber',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: isSelected ? Colors.white : MyTheme.darkText,
-                              fontWeight: (isSelected || isToday) ? FontWeight.bold : FontWeight.normal,
-                            )
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: isSelected ? Colors.white : MyTheme.darkText,
+                            fontWeight: (isSelected || isToday) ? FontWeight.bold : FontWeight.normal,
+                          ),
                         ),
                       ),
-                    )
+                    ),
                   );
                 },
               ),
-
               const SizedBox(height: 10.0),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -196,41 +171,9 @@ class _CalendarPageState extends State<CalendarPage> {
                       width: 139, height: 139,
                     ),
                   ),
-
                   SizedBox(width: 33),
-
-                  DottedBorder(
-                    color: MyTheme.pastelPink,
-                    strokeWidth: 3,
-                    dashPattern: const [6, 4],
-                    borderType: BorderType.RRect,
-                    radius: const Radius.circular(14),
-                    child: Container(
-                      padding: EdgeInsets.all(10),
-                      width: 188,
-                      height: 148,
-                      decoration: BoxDecoration(
-                        color: MyTheme.blushPink,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            'There is no plan for this day',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                            textAlign: TextAlign.left,
-                          ),
-                          AddButton(),
-
-                          SizedBox(height: 6),
-                          Text(
-                            'Add new plans',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          )
-                        ],
-                      ),
-                    ),
-                  )
+                  if (_showDayCard)
+                    const DayCard(),
                 ],
               )
             ],
@@ -239,5 +182,4 @@ class _CalendarPageState extends State<CalendarPage> {
       )
     );
   }
-
 }

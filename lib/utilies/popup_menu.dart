@@ -11,14 +11,11 @@ class CustomPopupMenu extends StatelessWidget {
         Icons.more_vert,
         color: MyTheme.pixelOutline,
       ),
-
       color: MyTheme.lavenderPurple,
-
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: BorderSide(color: MyTheme.pixelOutline, width: 2),
       ),
-
       onSelected: (String value)
       {
         switch (value)
@@ -31,20 +28,28 @@ class CustomPopupMenu extends StatelessWidget {
             break;
         }
       },
-
-
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-    PopupMenuItem<String>(
-      value: 'home',
+    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+      PopupMenuItem<String>(
+      value: 'calendar',
       child: Row(
         children: [
-          Icon(Icons.home, color: MyTheme.pixelOutline, size: 20),
+          Icon(Icons.calendar_month, color: MyTheme.pixelOutline, size: 20),
           const SizedBox(width: 8),
-          Text('Home', style: Theme.of(context).textTheme.bodySmall),
+          Text('Calender', style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
     ),
 
+      PopupMenuItem<String>(
+        value: 'diary',
+        child: Row(
+          children: [
+            Icon(Icons.edit_note, color: MyTheme.pixelOutline, size: 20),
+            const SizedBox(width: 8),
+            Text('My diary', style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ),
+      )
 ]
     );
   }
